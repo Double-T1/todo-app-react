@@ -1,0 +1,115 @@
+/* h1 {
+  border: 1px solid black;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 100px;
+} */
+
+/* -------- for all start --------- */
+.shadow {
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+}
+
+.btn-default {
+  border: 1px solid black;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.pointer:hover {
+  opacity: 0.5;
+}
+
+/* -------- for all end --------- */
+
+.user-area {
+  width: 100%;
+  margin: auto;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* -------- nav start --------- */
+.nav {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.nav p {
+  padding: 5px;
+  font-size: 1.5rem;
+}
+
+.nav p:not(:last-child) {
+  border-right: 1px solid black;
+}
+/* -------- nav end --------- */
+
+/* -------- flash start --------- */
+.flash-message {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 10px;
+  gap: 10px;
+  font-size: 1.5rem;
+  color: beige;
+}
+/* -------- flash end --------- */
+
+/* -------- panel start --------- */
+.panel {
+  margin-bottom: 30px;
+}
+
+.panel-title {
+  font-size: 2.5rem;
+  font-weight: 500;
+  padding: 10px 0;
+}
+
+/* -------- panel inputs start---------- */
+.panel-inputs {
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.input-area {
+  box-sizing: border-box;
+  padding: 10px 0;
+}
+
+.input-title {
+  margin-bottom: 5px;
+  font-size: 2rem;
+}
+
+.input-box {
+  font-size: 1.5rem;
+  padding: 10px;
+}
+
+.btn-area {
+  margin-bottom: 5px;
+}
+
+.btn-signUp,
+.btn-signIn {
+  font-size: 1.5rem;
+}
+
+.footer-area {
+  font-size: 1.5rem;
+}
+
+.footer-area span {
+  border-bottom: 1px solid black;
+}
+/* -------- panel inputs end ---------- */
+/* -------- panel end--------- */
