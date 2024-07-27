@@ -1,5 +1,5 @@
 import "./User.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const SERVER = "https://todoo.5xcamp.us";
@@ -98,11 +98,9 @@ function SignIn({showSignIn, alertUser, showTodo}) {
         }
       }
 
-      const {headers} = await axios.post(`${SERVER}/users/sign_in`,params,HEADERS);
-      localStorage.setItem("token",headers.authorization);
-      alertUser("success", "successfully signed in, start managing your todo list!");
-
-      showTodo(true);
+      const res = await axios.post(`${SERVER}/users/sign_in`,params,HEADERS);
+      localStorage.setItem("token",res.headers.authorization);
+      showTodo(true,res.data.nickname);
     } catch (error) {
       let errors = error.response.data.error;
       if (Array.isArray(errors)) {
@@ -185,31 +183,102 @@ function SignInAndUp({showTodo}) {
   )
 }
 
-function TodoInput() {
+function TodoInput({showTodo, updateTodoList}) {
+  const[newTodo, setNewTodo] = useState("");
+
+  function recordNewTodo(val) {
+    setNewTodo(val);
+  }
+
+  function addTask() {
+    const trimmed = newTodo.trim();
+    if (trimmed.length > 0) {
+      updateTodoList(newTodo);
+    }
+    setNewTodo("");
+  }
+
   return (
     <section className="user-area shadow">
       <div className="nav">
-        <p className="pointer">登出</p>
-        <p className="pointer">刪除帳號</p>
+        <p> 歡迎使用 </p>
+        <p className="pointer" onClick={() => showTodo(false)}>登出</p>
       </div>
 
       <div className="user-panel">
-        <section className="todoInput panel"></section>
+        <section className="todo-input-area panel">
+          <input onChange={e => recordNewTodo(e.target.value)} value={newTodo} type="text" className="todo-input" placeholder="做點重要的事吧"/>
+          <button onClick={addTask} className="btn-default btn-addTodo">新增</button>
+        </section>
       </div>
     </section>
   )
 }
 
+function TodoList({todoList}) {
+  return (
+    <section className="shadow todo-list">
+      <div className="todo-item">hello</div>
+    </section>
+  )
+}
+
+function Todo({showTodo, updateTodoList, todoList}) {
+  return (
+    <>
+      <TodoInput showTodo={showTodo} updateTodoList={updateTodoList}/>
+      <TodoList todoList={todoList}/>
+    </>
+  )
+}
+
 function User() {
   const [hasAccount, setHasAccount] = useState(false);
+  const [todoList, setTodoList] = useState([]);
 
-  function showTodo(bool) {
+  useEffect(() => {
+    (async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          HEADERS["headers"]["Authorization"] = token;
+          const {data} = await axios.get(`${SERVER}/todos`,HEADERS);
+          showTodo(true);
+          setTodoList(data.todos);
+        } catch (err) {
+          localStorage.removeItem("token");
+        }
+      }
+    })();
+  },[])
+
+  function updateTodoList(newTodo) {
+    setTodoList([newTodo,...todoList]);
+  }
+
+  async function showTodo(bool) {
+    if (!bool) {
+      const token = localStorage.getItem("token");
+      HEADERS["headers"]["Authorization"] = token;
+      try {
+        await axios.delete(`${SERVER}/users/sign_out`,HEADERS);
+      } catch(error) {
+        console.log(error);
+        // do something.....
+      } 
+
+      localStorage.removeItem("token");
+    }
     setHasAccount(bool);
   }
 
+
   return (
     <div className="container">
-      { hasAccount ? <TodoInput /> : <SignInAndUp showTodo={showTodo}/> }
+      { hasAccount ?
+        <Todo showTodo={showTodo} updateTodoList={updateTodoList} todoList={todoList}/>
+        : <SignInAndUp showTodo={showTodo}/> 
+      }
     </div>
   )
 }
