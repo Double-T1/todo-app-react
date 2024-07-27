@@ -116,6 +116,7 @@
 /* -------- panel end--------- */
 
 /* -------- todo start ---------- */
+/* -------- todoinput start --------- */
 .todo-area {
   border: 1px solid black;
 }
@@ -140,6 +141,7 @@
 
 .todo-input {
   border: 1px solid black;
+  width: 70%;
 }
 
 .btn-addTodo {
@@ -151,4 +153,76 @@
 .btn-addTodo:hover {
   opacity: 0.5;
 }
+/* -------- todoinput end --------- */
+/* -------- todolist start --------- */
+.todo-list {
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.todo-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.5rem;
+  padding: 10px 0;
+}
+
+.item-underline {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+.todo-content-area,
+.todo-icons-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.todo-content-area > *,
+.todo-icons-area > * {
+  padding: 5px;
+}
+
+.todo-content {
+  padding: 0 0 0 3px;
+  font-size: 1.7rem;
+  border: none;
+  background-color: transparent;
+  cursor: text;
+  color: black;
+}
+
+.checkbox,
+.icon {
+  cursor: pointer;
+}
+
+.line-through {
+  text-decoration: line-through;
+}
+
+.icon:hover {
+  opacity: 0.5;
+  color: red;
+}
+
+.hidden {
+  display: none;
+}
+
+.editing {
+  background-color: green;
+  color: beige;
+  cursor: pointer;
+  border-radius: 10px;
+  opacity: 0.7;
+}
+
+.editing:hover {
+  opacity: 1;
+}
+/* -------- todolist end --------- */
 /* -------- todo end ---------- */

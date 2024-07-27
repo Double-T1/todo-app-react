@@ -1,6 +1,8 @@
 import "./User.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 const SERVER = "https://todoo.5xcamp.us";
 const HEADERS = {
@@ -97,7 +99,7 @@ function SignIn({showSignIn, alertUser, showTodo}) {
           password: password
         }
       }
-
+      
       const res = await axios.post(`${SERVER}/users/sign_in`,params,HEADERS);
       localStorage.setItem("token",res.headers.authorization);
       showTodo(true,res.data.nickname);
@@ -198,6 +200,12 @@ function TodoInput({showTodo, updateTodoList}) {
     setNewTodo("");
   }
 
+  function handleKeyUp(event) {
+    if (event.keyCode === 13) {
+      addTask();
+    }
+  }
+
   return (
     <section className="user-area shadow">
       <div className="nav">
@@ -207,7 +215,7 @@ function TodoInput({showTodo, updateTodoList}) {
 
       <div className="user-panel">
         <section className="todo-input-area panel">
-          <input onChange={e => recordNewTodo(e.target.value)} value={newTodo} type="text" className="todo-input" placeholder="做點重要的事吧"/>
+          <input onKeyUp={handleKeyUp} onChange={e => recordNewTodo(e.target.value)} value={newTodo} type="text" className="todo-input" placeholder="做點重要的事吧"/>
           <button onClick={addTask} className="btn-default btn-addTodo">新增</button>
         </section>
       </div>
@@ -215,19 +223,78 @@ function TodoInput({showTodo, updateTodoList}) {
   )
 }
 
-function TodoList({todoList}) {
+function TodoItem({todo, deleteTodo, updateTodoItem}) {
+  const [allowEdit, setAllowEdit] = useState(false);
+  const [content, setContent] = useState(todo.content);
+  const [isChecked, setIsChecked] = useState(false);
+
+  function handleDelete(id) {
+    deleteTodo(id);
+  }
+
+  function closeEdit() {
+    setAllowEdit(false);
+    setContent(todo.content);
+  }
+
+  function startEdit() {
+    setAllowEdit(true);
+  }
+
+  function handleChange(e) {
+    setContent(e.currentTarget.value);
+  }
+
+  function updateItem(id) {
+    setAllowEdit(false);
+    updateTodoItem({
+      id: id,
+      content: content
+    });
+  }
+
+  function handleCheck() {
+    setIsChecked(!isChecked);
+  }
+
   return (
-    <section className="shadow todo-list">
-      <div className="todo-item">hello</div>
-    </section>
+    <li className="todo-item item-underline" key={todo.id}>
+      <label className="todo-content-area">
+        <input type="checkbox" checked={isChecked} onChange={handleCheck} className="checkbox"/>
+        <input onChange={handleChange} value={content}
+          disabled={!allowEdit} type="text" className={"todo-content " + (isChecked && "line-through")}
+        />
+      </label>
+      <div className="todo-icons-area ">
+        <p className={`editing ${allowEdit ? "" : 'hidden'}`} onClick={() => updateItem(todo.id)}>儲存此更改</p>
+        <p className={`editing ${allowEdit ? "" : 'hidden'}`} onClick={closeEdit}>放棄此更改</p>
+        <FontAwesomeIcon className="icon" icon={faPenToSquare} onClick={startEdit}/>
+        <FontAwesomeIcon className="icon" icon={faTrash} onClick={() => handleDelete(todo.id)}/>
+      </div>
+    </li>
   )
 }
 
-function Todo({showTodo, updateTodoList, todoList}) {
+function TodoList({todoList, deleteTodo, updateTodoItem}) {
+  return (
+    <ul className="shadow todo-list">
+      {todoList.map(todo => {
+        return (
+          <TodoItem todo={todo} key={todo.id} 
+            deleteTodo={deleteTodo}
+            updateTodoItem={updateTodoItem}  
+          />
+        ) 
+      })}
+    </ul>
+  )
+}
+
+function Todo({showTodo, updateTodoList, todoList, deleteTodo, updateTodoItem}) {
   return (
     <>
       <TodoInput showTodo={showTodo} updateTodoList={updateTodoList}/>
-      <TodoList todoList={todoList}/>
+      <TodoList todoList={todoList} deleteTodo={deleteTodo} updateTodoItem={updateTodoItem}/>
     </>
   )
 }
@@ -252,16 +319,65 @@ function User() {
     })();
   },[])
 
-  function updateTodoList(newTodo) {
-    setTodoList([newTodo,...todoList]);
+  async function updateTodoItem(newItem) {
+    try {
+      const params = {
+        todo: {
+          content: newItem.content
+        }
+      }
+      HEADERS["headers"]["Authorization"] = localStorage.getItem("token");
+      await axios.put(`${SERVER}/todos/${newItem.id}`,params,HEADERS);
+      delete HEADERS["headers"]["Authorization"];
+      const index = todoList.reduce((accu,cv,i) => {
+        return cv.id === newItem.id ? i : accu;
+      },-1);
+      const newTodoList = todoList.toSpliced(index, 1, newItem);
+      setTodoList(newTodoList);
+    } catch (err) {
+      console.log(err);
+      //alert user
+    }
+  }
+
+  async function updateTodoList(newTodo) {
+    try {
+      const token = localStorage.getItem("token");
+      const params = {
+        todo: {
+          content: newTodo
+        }
+      }
+      HEADERS["headers"]["Authorization"] = token;
+      const res = await axios.post(`${SERVER}/todos`,params,HEADERS);
+      delete HEADERS["headers"]["Authorization"];
+      setTodoList([res.data,...todoList]);
+    } catch (error) {
+      console.log(error);
+      //alertUser("error", "somthing went wrong");
+    }
+  }
+
+  async function deleteTodo(id) {
+    try {
+      HEADERS["headers"]["Authorization"] = localStorage.getItem("token");
+      await axios.delete(`${SERVER}/todos/${id}`,HEADERS);
+      delete HEADERS["headers"]["Authorization"];
+      const newTodoList = todoList.slice().filter(ele => ele.id !== id);
+      setTodoList(newTodoList);
+    } catch (err) {
+      console.log(err);
+      //alert user
+    }
   }
 
   async function showTodo(bool) {
     if (!bool) {
-      const token = localStorage.getItem("token");
-      HEADERS["headers"]["Authorization"] = token;
       try {
+        const token = localStorage.getItem("token");
+        HEADERS["headers"]["Authorization"] = token;
         await axios.delete(`${SERVER}/users/sign_out`,HEADERS);
+        delete HEADERS["headers"]["Authorization"];
       } catch(error) {
         console.log(error);
         // do something.....
@@ -276,8 +392,11 @@ function User() {
   return (
     <div className="container">
       { hasAccount ?
-        <Todo showTodo={showTodo} updateTodoList={updateTodoList} todoList={todoList}/>
-        : <SignInAndUp showTodo={showTodo}/> 
+        <Todo 
+          showTodo={showTodo} updateTodoList={updateTodoList} 
+          todoList={todoList} deleteTodo={deleteTodo} 
+          updateTodoItem={updateTodoItem}
+        /> : <SignInAndUp showTodo={showTodo}/> 
       }
     </div>
   )
