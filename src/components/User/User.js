@@ -262,12 +262,12 @@ function TodoItem({todo, deleteTodo, updateTodoItem}) {
       <label className="todo-content-area">
         <input type="checkbox" checked={isChecked} onChange={handleCheck} className="checkbox"/>
         <input onChange={handleChange} value={content}
-          disabled={!allowEdit} type="text" className={"todo-content " + (isChecked && "line-through")}
+          disabled={!allowEdit} type="text" className={"todo-content " + (isChecked && " line-through")}
         />
       </label>
       <div className="todo-icons-area ">
-        <p className={`editing ${allowEdit ? "" : 'hidden'}`} onClick={() => updateItem(todo.id)}>儲存此更改</p>
-        <p className={`editing ${allowEdit ? "" : 'hidden'}`} onClick={closeEdit}>放棄此更改</p>
+        <p className={"editing " + (allowEdit && ' hidden')} onClick={() => updateItem(todo.id)}>儲存此更改</p>
+        <p className={"editing " + (allowEdit && ' hidden')} onClick={closeEdit}>放棄此更改</p>
         <FontAwesomeIcon className="icon" icon={faPenToSquare} onClick={startEdit}/>
         <FontAwesomeIcon className="icon" icon={faTrash} onClick={() => handleDelete(todo.id)}/>
       </div>
@@ -363,7 +363,7 @@ function User() {
       HEADERS["headers"]["Authorization"] = localStorage.getItem("token");
       await axios.delete(`${SERVER}/todos/${id}`,HEADERS);
       delete HEADERS["headers"]["Authorization"];
-      const newTodoList = todoList.slice().filter(ele => ele.id !== id);
+      const newTodoList = todoList.filter(ele => ele.id !== id);
       setTodoList(newTodoList);
     } catch (err) {
       console.log(err);
